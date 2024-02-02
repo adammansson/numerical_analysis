@@ -5,6 +5,7 @@ void matrix_print(int dim, double *m)
 {
   int i;
 
+  printf("\n");
   for (i = 0; i < dim * dim; i++) {
     printf("|%f|", m[i]);
 
@@ -19,6 +20,7 @@ void vector_print(int dim, double *v)
 {
   int i;
 
+  printf("\n");
   for (i = 0; i < dim; i++) {
     printf("|%f|\n", v[i]);
   }
@@ -41,8 +43,10 @@ void back_substitute(int dim, double *a, double *b, double *x)
   }
 
   matrix_print(3, a);
-  vector_print(3, b);
+  printf("*\n");
   vector_print(3, x);
+  printf("=\n");
+  vector_print(3, b);
 }
 
 int main(int argc, char *argv[])
