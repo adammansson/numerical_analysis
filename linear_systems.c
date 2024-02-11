@@ -1,3 +1,4 @@
+#include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -124,6 +125,17 @@ void matrix_multiplication(int dim, double *a, double *b, double *c)
   }
 }
 
+void matrix_addition(int dim, double *a, double *b)
+{
+  int i, length;
+
+  length = dim * dim;
+
+  for (i = 0; i < length; i++) {
+    a[i] += b[i];
+  }
+}
+
 void lu_solve(int dim, double *a, double *b, double *x)
 {
   double l[9];
@@ -135,81 +147,301 @@ void lu_solve(int dim, double *a, double *b, double *x)
   back_substitution(3, u, c, x);
 }
 
-int main(int argc, char *argv[])
+double matrix_determinant(int dim, double *a)
 {
-  /*
-  double a[9] = {
-    3.0, 1.0, 2.0,
-    0.0, 3.0, 4.0,
-    0.0, 0.0, 5.0,
-  };
+  double *a_copy, *b_unused, det;
+  int i;
 
+  a_copy = malloc(sizeof(double) * dim * dim);
+  b_unused = malloc(sizeof(double) * dim);
+
+  memcpy(a_copy, a, sizeof(double) * dim * dim);
+
+  gaussian_elimination(dim, a_copy, b_unused);
+
+  det = 1;
+  for (i = 0; i < dim; i++) {
+    det *= a_copy[i * dim + i];
+  }
+
+  free(a_copy);
+  free(b_unused);
+
+  return det;
+}
+
+void jacobi_solve(int dim, double *a, double *b, double *x, int iterations)
+{
+  int row, col;
+  double *old_x, sum;
+
+  if (matrix_determinant(3, a) == 0.0) {
+    printf("Determinant of A is 0, can't solve using Jacobi");
+    exit(EXIT_FAILURE);
+  }
+
+  old_x = malloc(sizeof(double) * dim * dim);
+
+  for (; iterations >= 0; iterations--) {
+    memcpy(old_x, x, sizeof(double) * dim * dim);
+
+    for (row = 0; row < dim; row++) {
+      sum = b[row];
+      for (col = 0; col < dim; col++) {
+        if (col != row) {
+          sum -= a[row * dim + col] * old_x[col];
+        }
+      }
+
+      x[row] = sum / a[row * dim + row];
+    }
+  }
+
+  free(old_x);
+}
+
+void test_jacobi()
+{
   double a[9] = {
-    5.0, 0.0, 0.0,
-    4.0, 3.0, 0.0,
-    2.0, 1.0, 3.0,
+    10.2, 0, -1.1,
+    0.1, 12.0, 0,
+    0.1, 0.2, -9.3,
   };
 
   double b[3] = {
-    6.0, 3.0, 1.0,
+    1, 2, 0,
   };
 
-  double a1[9] = {
-    3, -0.5, 0.6,
-    4.7, 2, 2.3,
-    0.1, -5, 9.1,
+  double x[3] = {
+    0.1, 0.2, 0,
   };
 
-  double b1[3] = {
-    4.57, 8.14, 46.76,
-  };
+  jacobi_solve(3, a, b, x, 3);
 
-  double x1[3];
-
-  gaussian_solve(3, a1, b1, x1);
-  vector_print(3, x1);
-
-  double a2[9] = {
-    1, 1, 1,
-    1, -1, 2,
-    3, 1, 4,
-  };
-
-  double b2[3] = {
-    1, 1, 1,
-  };
-
-  double x2[3];
-
-  gaussian_solve(3, a2, b2, x2);
-  vector_print(3, x2);
-  */
-
-  double a3[9] = {
-    4, 2, 0,
-    4, 4, 2,
-    2, 2, 3,
-  };
-
-  double b3[3] = {
-    1, 2, 3,
-  };
-
-  double x[3];
-
-  double l3[9];
-  double u3[9];
-  double r3[9];
-
-  lu_decomposition(3, a3, l3, u3);
-  matrix_print(3, l3);
-  matrix_print(3, u3);
-
-  matrix_multiplication(3, l3, u3, r3);
-  matrix_print(3, r3);
-
-  lu_solve(3, a3, b3, x);
   vector_print(3, x);
+}
+
+void gauss_seidel_solve(int dim, double *a, double *b, double *x, int iterations)
+{
+  int row, col;
+  double *old_x, sum;
+
+  if (matrix_determinant(3, a) == 0.0) {
+    printf("Determinant of A is 0, can't solve using Jacobi");
+    exit(EXIT_FAILURE);
+  }
+
+  old_x = malloc(sizeof(double) * dim * dim);
+
+  for (; iterations >= 0; iterations--) {
+    memcpy(old_x, x, sizeof(double) * dim * dim);
+    for (row = 0; row < dim; row++) {
+      sum = b[row];
+      for (col = 0; col < dim; col++) {
+        if (col > row) {
+          sum -= a[row * dim + col] * old_x[col];
+        } else if (col < row){
+          sum -= a[row * dim + col] * x[col];
+        }
+      }
+
+      x[row] = sum / a[row * dim + row];
+    }
+  }
+
+  free(old_x);
+}
+
+void test_gauss_seidel()
+{
+  double a[9] = {
+    10, 0, 1,
+    6, 12, 0,
+    8, 0, 9,
+  };
+
+  double b[3] = {
+    15, 30, 53,
+  };
+
+  double x[3] = {
+    0, 1, 3,
+  };
+
+  gauss_seidel_solve(3, a, b, x, 6);
+
+  vector_print(3, x);
+}
+
+void sor_solve(int dim, double *a, double *b, double *x, double omega, int iterations)
+{
+  int row, col;
+  double *old_x, sum;
+
+  if (matrix_determinant(3, a) == 0.0) {
+    printf("Determinant of A is 0, can't solve using Jacobi");
+    exit(EXIT_FAILURE);
+  }
+
+  old_x = malloc(sizeof(double) * dim * dim);
+
+  for (; iterations >= 0; iterations--) {
+    memcpy(old_x, x, sizeof(double) * dim * dim);
+    for (row = 0; row < dim; row++) {
+      sum = b[row];
+      for (col = 0; col < dim; col++) {
+        if (col > row) {
+          sum -= a[row * dim + col] * old_x[col];
+        } else if (col < row){
+          sum -= a[row * dim + col] * x[col];
+        }
+      }
+
+      x[row] = (1 - omega) * old_x[row] + omega * (sum / a[row * dim + row]);
+    }
+  }
+
+  free(old_x);
+}
+
+void test_sor()
+{
+  double a[9] = {
+    10, 0, 1,
+    6, 12, 0,
+    8, 0, 9,
+  };
+
+  double b[3] = {
+    15, 30, 53,
+  };
+
+  double x[3] = {
+    0, 1, 3,
+  };
+
+  sor_solve(3, a, b, x, 1.5, 10);
+
+  vector_print(3, x);
+}
+
+double vector_infinity_norm(int dim, double *v)
+{
+  double max;
+  max = 0;
+
+  for (dim = dim - 1; dim >= 0; dim--) {
+    if (fabs(v[dim]) > max) {
+      max = fabs(v[dim]);
+    }
+  }
+
+  return max;
+}
+
+double vector_2_norm(int dim, double *v)
+{
+  double sum;
+
+  for (dim = dim - 1; dim >= 0; dim--) {
+    sum += fabs(v[dim]) * fabs(v[dim]);
+  }
+
+  return sqrt(sum);
+}
+
+void exercise_3_1()
+{
+  double a[36] = {
+    3, -1, 0, 0, 0, 1.0/2.0,
+    -1, 3, -1, 0, 1.0/2.0, 0,
+    0, -1, 3, -1, 0, 0,
+    0, 0, -1, 3, -1, 0,
+    0, 1.0/2.0, 0, -1, 3, -1,
+    1.0/2.0, 0, 0, 0, -1, 3,
+  };
+
+  double b[6] = {
+    5.0/2.0, 3.0/2.0, 1, 1, 3.0/2.0, 5.0/2.0,
+  };
+
+  double x[6];
+
+  memset(x, 0, sizeof(double) * 6);
+  jacobi_solve(6, a, b, x, 6);
+  vector_print(6, x);
+  printf("jacobi error = %f\n", fabs(vector_infinity_norm(6, x) - 1));
+
+  memset(x, 0, sizeof(double) * 6);
+  gauss_seidel_solve(6, a, b, x, 6);
+  vector_print(6, x);
+  printf("gauss-seidel error = %f\n", fabs(vector_infinity_norm(6, x) - 1));
+
+  memset(x, 0, sizeof(double) * 6);
+  sor_solve(6, a, b, x, 1.2, 6);
+  vector_print(6, x);
+  printf("sor error = %f\n", fabs(vector_infinity_norm(6, x) - 1));
+
+  /*
+   * CORRECT ANSWER:
+   * [1, 1, 1, 1, 1, 1]
+  */
+}
+
+void assignment3_2()
+{
+  double a[16] = {
+    3, 1, 1, 0,
+    1, 6, 3, -1,
+    6, 0, 9, -2,
+    1, 0, -1, -7,
+  };
+
+  double b[4] = {
+    1, 1, 1, 1,
+  };
+
+  double x[4] = {
+    0, 1, 1, 0,
+  };
+
+  jacobi_solve(4, a, b, x, 25);
+  vector_print(4, x);
+  printf("2norm = %f\n", vector_2_norm(4, x));
+  // CORRECT ANSWER: 0.3858
+}
+
+void assignment3_3()
+{
+  double a[16] = {
+    15, -5, 1, 1.1,
+    0, 5, 2, -1,
+    2, -1, 9, -1,
+    1, 1.1, -1, -6,
+  };
+
+  double b[4] = {
+    1, 1, 1, 1,
+  };
+
+  double x[4] = {
+    2, 1, 1, 1,
+  };
+
+  jacobi_solve(4, a, b, x, 10);
+  vector_print(4, x);
+  printf("2norm = %f\n", vector_2_norm(4, x));
+  // CORRECT ANSWER: 0.2423
+}
+
+int main(int argc, char *argv[])
+{
+  // test_jacobi();
+  // test_gauss_seidel();
+  // test_sor();
+  // exercise_3_1();
+  // assignment3_2();
+  assignment3_3();
 
   return EXIT_SUCCESS;
 }
