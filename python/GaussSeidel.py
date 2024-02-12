@@ -31,6 +31,32 @@ def assignment3_3():
     print(np.linalg.norm(x10, 2))
     # CORRECT ANSWER: 0.2423
 
+def exercise3_5():
+    A = [[3, 1, -1],
+         [2, 4, 1],
+         [-1, 2, 5]]
+    a_ans= [4, 1, 1]
+
+    x100 = GaussSeidel(A, a_ans, [0, 10000, 0], 100)
+    print(x100)
+    print(np.matmul(A, x100))
+
+    B = [[1, 1.0001],
+         [1.0001, 1]]
+    b_ans = [2, 3]
+    x100 = GaussSeidel(B, b_ans, [0, 0], 100000)
+    print(x100)
+    print(np.matmul(B, x100))
+
+    C = [[1.0001, 1],
+         [1, 1.0001]]
+    c_ans = [2, 3]
+    x100 = GaussSeidel(C, c_ans, [0, 0], 100000)
+    print(x100)
+    print(np.matmul(C, x100))
+
+
 if __name__ == "__main__":
-    assignment3_3()
+    # assignment3_3()
+    exercise3_5()
 

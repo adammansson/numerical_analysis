@@ -41,6 +41,11 @@ double function_4(double x)
   return cos(x) * cos(x);
 }
 
+double assignment3_3(double x)
+{
+  return (x + 2 / x) / 2;
+}
+
 void solve_numerically(
   double (*fn)(double),
   double x,
@@ -70,7 +75,9 @@ int main(int argc, char *argv[])
 
   iterations = atoi(argv[1]);
 
-  solve_numerically(function_4, 0.5, 200);
+  // solve_numerically(function_4, 0.5, 200);
+  solve_numerically(assignment3_3, 1.4, 200);
+  printf("sqrt(2) = %.16f\n", sqrt(2.0));
 
   return EXIT_SUCCESS;
 }
