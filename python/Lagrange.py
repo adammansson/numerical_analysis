@@ -19,11 +19,13 @@ def LagrangeInterpolation(xs, f):
     return res
 
 def exercise_1():
-    N = 10
-    xs = [-1 + 2*i/N for i in range(N)]
+    N = 20
+    xs = [-1 + 2*i/N for i in range(N + 1)]
     f = lambda x : np.exp(-x**2)
-    print(LagrangeInterpolation(xs, f))
-    plt.plot(xs, [LagrangeInterpolation(xs, f)(x) for x in xs])
+    ys = [LagrangeInterpolation(xs, f)(x) for x in xs]
+    es = [abs(f(x) - LagrangeInterpolation(xs, f)(x)) for x in xs]
+
+    plt.plot(xs, es)
     plt.show()
 
 if __name__ == "__main__":
