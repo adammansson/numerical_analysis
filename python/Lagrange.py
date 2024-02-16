@@ -10,11 +10,11 @@ def LagrangePolynomial(i, xs):
 
     return res
 
-def LagrangeInterpolation(xs, f):
+def LagrangeInterpolation(xs, ys):
     N = len(xs)
     res = np.polynomial.Polynomial([0])
     for i in range(N):
-        res += f(xs[i]) * LagrangePolynomial(i, xs)
+        res += ys[i] * LagrangePolynomial(i, xs)
 
     return res
 
@@ -22,12 +22,20 @@ def exercise_1():
     N = 20
     xs = [-1 + 2*i/N for i in range(N + 1)]
     f = lambda x : np.exp(-x**2)
-    ys = [LagrangeInterpolation(xs, f)(x) for x in xs]
-    es = [abs(f(x) - LagrangeInterpolation(xs, f)(x)) for x in xs]
+    fs = [f(x) for x in xs]
+    ys = [LagrangeInterpolation(xs, fs)(x) for x in xs]
+    es = [abs(f(x) - LagrangeInterpolation(xs, fs)(x)) for x in xs]
 
-    plt.plot(xs, es)
+    plt.plot(xs, ys)
     plt.show()
 
+def exercise_2():
+    xs = [1, 2, 3, 4, 5, 6]
+    ys = [10, 10, 10, 10, 10, 15]
+    p = LagrangeInterpolation(xs, ys)
+    print(p(7))
+
 if __name__ == "__main__":
-    exercise_1()
+    # exercise_1()
+    exercise_2()
 

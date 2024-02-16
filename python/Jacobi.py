@@ -4,7 +4,7 @@ def Jacobi(A, b, x0, iterations):
     n = len(b)
     x = x0
     for _ in range(iterations):
-        prev_x = x
+        prev_x = [e for e in x]
         for row in range(n):
             sum = b[row]
             for col in range(n):
@@ -28,6 +28,18 @@ def assignment3_3():
     print(np.linalg.norm(x25, 2))
     # CORRECT ANSWER: 0.3857
 
+def assignment4_1():
+    A = [[3, -1],
+         [-1, 2]]
+    
+    b = [5, 4]
+    x0 = [1, 0]
+
+    x1 = Jacobi(A, b, x0, 1)
+    print(x1)
+    # CORRECT ANSWER: [5/3, 5/2]
+
 if __name__ == "__main__":
-    assignment3_3()
+     # assignment3_3()
+     assignment4_1()
 
