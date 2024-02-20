@@ -1,10 +1,11 @@
 import numpy as np
+import copy
 
 def Jacobi(A, b, x0, iterations):
     n = len(b)
     x = x0
     for _ in range(iterations):
-        prev_x = [e for e in x]
+        prev_x = copy.copy(x)
         for row in range(n):
             sum = b[row]
             for col in range(n):
